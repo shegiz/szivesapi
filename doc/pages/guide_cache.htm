@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Cache - Wave Framework</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width"/> 
+		<link type="text/css" href="../style.css" rel="stylesheet" media="all"/>
+		<link rel="icon" href="../../favicon.ico" type="image/x-icon"/>
+		<link rel="icon" href="../../favicon.ico" type="image/vnd.microsoft.icon"/>
+	</head>
+	<body>
+	
+		<h1>Caching and Cache Calls</h1>
+		
+			<ul>
+				<li><a href="#index-introduction">Introduction</a></li>
+				<li><a href="#index-command-buffer">Command Buffer</a></li>
+				<li><a href="#index-cache-functionality">Cache Functionality</a></li>
+				<li><a href="#index-cache-storage">Cache Storage</a></li>
+			</ul>
+		
+			<p>This documentation covers functionality of objects that use a class that is extended from WWW_Factory class. Methods and calls in this documentation can be used when building your Models, Views and Controller classes and their functionality.</p>
+		
+			<h2 id="index-introduction">Introduction</h2>
+			
+				<p>Wave Framework comes with an extensive caching framework that is entwined throughout the system and the API. While cache handling on HTTP page and API requests is one of the core features of Wave Framework, then this functionality is also available for <a href="guide_mvc.htm">MVC</a> objects in one way or another.</p>
+				
+			<h2 id="index-command-buffer">Command Buffer</h2>
+			
+				<p>While not directly related to Wave Framework caching, the API also implements API command buffering. This means that the API tracks what API requests are made and with what input within a single HTTP request. Since API requests can be nested in Wave Framework, at times the same <a href="guide_api.htm">API</a> call can be executed multiple times with the exact same input.</p>
+				
+				<p>In order to lower the potential memory and processing power consumption with these repeated requests, API has an internal buffer that stores <a href="guide_api.htm">API</a> call request results for every <a href="guide_api.htm">API</a> call that is successfully made. This buffer is used only within the single HTTP request and is not transferred to subsequent requests. This helps the API to minimize the amount of processing it needs to do when the same <a href="guide_api.htm">API</a> call is requested in multiple places (such as loading certain users account information) in multiple places in the same view within the same HTTP request.</p>
+				
+				<p>At times it is necessary to clear this buffer, in case you are certain that the buffer might have changed and that other calls are made that should return a different result, but do not because of the buffer. For those cases it is possible to clear the API buffer with the following call:</p>
+				
+<pre>
+	<code>
+	$this->clearBuffer();
+	</code>
+</pre>
+
+				<p>This call resets the API buffer to the state that it was at the start of the request. In other words: empty.</p>
+				
+			<h2 id="index-cache-functionality">Cache Functionality</h2>
+			
+				<p>Wave Framework has multiple methods that can be called from within the <a href="guide_mvc.htm">MVC</a> objects. This includes methods for saving a custom keyword in cache, tagging cache or removing tagged cache. There's even a function that can return the result from the previously known cache of the current <a href="guide_api.htm">API</a> call.</p>
+				
+				<p>Wave Framework usually stores cache in <a href="filesystem.htm">Filesystem</a> in '/filesystem/' folder which has to be writable, together with all of its subfolders, on the web server. But some cache can also be stored in APC, if APC is supported on the server. Wave Framework deals with this automatically, though you can turn off APC in <a href="configuration.htm">Configuration</a> even when the server supports it.</p>
+				
+				<h3>Disabling Cache</h3>
+				
+					<p>In order to trust in cache and use it properly, you must also know how to disable it. Wave Framework cache system is technically out of the control of <a href="guide_mvc.htm">MVC</a> objects and these objects have very minimal control over how they themselves are being cached. Sometimes though, it is necessary to make sure that the current execution is not cached, no matter what. This can be done with the following command:</p>
+				
+<pre>
+	<code>
+	// This disables cache of the current API call
+	$this->disableCache();
+	// It is possible to enable it again before the call returns a result
+	$this->disableCache(false);
+	</code>
+</pre>
+
+					<p>This state is not final however, which is why it is always possible to re-enable caching, if requested, as shown in the above example.</p>
+				
+					<p>This cache-disabling also happens automatically whenever <a href="guide_messenger.htm">State Messenger</a>  is used, but you can read more about <a href="guide_messenger.htm">State Messenger</a>  in its own documentation page.</p>
+				
+				<h3>Basic Cache Methods</h3>
+				
+					<p>You can use Wave Framework caching system to write your own variables into cache that can be used in other parts of the system. These methods are pretty simple. Here is an example of both setting cache, getting the value from cache and then unsetting the cache variable:</p>
+					
+<pre>
+	<code>
+	// Here we add a value, with key as an address, to cache
+	$this->setCache('my-key','my-cached-value');
+	// This returns that value from cache
+	$myCachedValue=$this->getCache('my-key');
+	// This does the same as above, but accepts only cache that is less than 60 seconds old
+	$myCachedValue=$this->getCache('my-key',60);
+	// This unsets that cache key from cache
+	$this->unsetCache('my-key');
+	</code>
+</pre>
+
+					<p>Cache variables that are set in cache are accessible by any other Controller and <a href="guide_api.htm">API</a> call in the system as long as they are set. You can also see how 'old' a cache variable is with the following request:</p>
+				
+<pre>
+	<code>
+	// Returns timestamp of the cache creation time in seconds
+	$cacheAge=$this->cacheTime('my-key');
+	</code>
+</pre>
+
+					<p>This timestamp can be useful to determine if something should be regenerated again, or not.</p>
+					
+				<h3>Cache Tagging</h3>
+				
+					<p>It is possible to write cache tags in Wave Framework. This means that it is possible to assign keywords, or 'tags', to any cache that the API creates. Multiple different caches can be stored under the same cache keyword.</p>
+					
+					<p>Benefit of this type of cache tagging is that it is possible to delete cache in bulk based on these tags. Main situation where this would be useful is when you store a lot of cache for a specific product on your website - information that can take a long time to generate - and you wish to cache this information with a long expire time. But what if the product changes and cache is still not expired?</p>
+					
+					<p>This is the type of situation where cache tags are useful. You can assign a tag to every cache that you create, and you can also make Wave Framework delete all cache that has been tagged with a specific keyword.</p>
+					
+					<p>Here is an example, similar to the one shown in the previous section, about how to add a cache variable to cache, but this times together with a cache tag:</p>
+			
+<pre>
+	<code>
+	// Here we add a value, with key as an address, to cache, together with a cache tag
+	$this->setCache('my-key','my-cached-value','my-tag');
+	// Here is another cache value with a different key but the same cache tag
+	$this->setCache('my-other-key','my-other-cached-value','my-tag');
+	</code>
+</pre>
+
+					<p>It is then possible to unset all cache that has that 'my-tag' set as the cache tag, all at once. Here's how:</p>
+					
+<pre>
+	<code>
+	$this->unsetTaggedCache('my-key');
+	</code>
+</pre>
+
+					<p>After this method is called, then every cache in the system that has been tagged with 'my-key' would be deleted. This includes not just cache that has been written with setCache() methods, but also internal <a href="guide_api.htm">API</a> calls as well as <a href="guide_api.htm">API</a> calls that have been made over HTTP.</p>
+					
+					<p>On a website or in a web service that is well built, it will be technically possible to cache most of your website and serve from cache almost every time with every HTTP request, only generating the data again if the system detects a change. This type of system is only possible with a well structured cache-tagged caching.</p>
+
+				<h3>Accessing Previous Cache</h3>
+
+					<p>There is one more set of methods that is possible from within <a href="guide_mvc.htm">MVC</a> Objects in Wave Framework that can be very useful at times. It is possible to refer to previous cache in Controllers. This means that if an <a href="guide_api.htm">API</a> call is made and a Controller is loaded without cache being used, then this Controller can get both the timestamp and contents of cache of the previous time when the cache was there.</p>
+					
+					<p>While a little difficult to explain, this flow description might give a good real life example:</p>
+					
+					<ul>
+						<li>Imagine that your web service has a Controller that makes an API request to Twitter API and gets the last tweet that had the hashtag of #waveframework. Twitter limits the amount of times you can make API requests every day, so this means that your website should cache this information and only make these requests infrequently.</li>
+						<li>In order to make this happen, you make the API requests in the Controller with a 'www-cache-timeout' of, for example, 600 seconds or ten minutes.</li>
+						<li>This system will work very well, until at some point, when you ping Twitter again to see if a new tweet is there, the Twitter API returns an empty array instead, since no one has used the hashtag for a few weeks. Even though you know that a tweet with that hashtag existed.</li>
+						<li>Usually you would have to build your own checks for cases such as this, or cache this previous tweet variable in <a href="guide_database.htm">Database</a> or <a href="filesystem.htm">Filesystem</a> somewhere.</li>
+					</ul>
+					
+					<p>Wave Framework however allows you to actually refer to the contents and timestamp of your previous cache and you can do with this data whatever you want within the Controller. You can even make the Controller return the previous cache every single time, which technically means that the first generated cache would be permanent.</p>
+					
+					<p>This is how you can refer to the previous contents as well as the creation timestamp of the cache of the current <a href="guide_api.htm">API</a> call:</p>
+					
+<pre>
+	<code>
+	// This returns the cache of the previous cache
+	$oldCacheContents=$this->getExistingCache();
+	// This returns the UNIX timestamp of the previous cache
+	$oldCacheTimestamp=$this->getExistingCacheTime();
+	</code>
+</pre>
+
+					<p>These methods allow you to fine-tune details of your cache and architecture in general in order to build a more optimized and efficient software.</p>
+				
+			<h2 id="index-cache-storage">Cache Storage</h2>
+			
+				<p>Wave Framework includes four different ways how cache can be stored on the server: filesystem cache, database cache, APC and Memcache. Caching is an important part of Wave Framework and is one of the better ways to improve the performance of your website.</p>
+		
+				<p>You can define what type of caching you are using in your Configuration file. If APC, Memcache and Database cache options are not used, then Wave Framework uses Filesystem cache by default (thus it is not possible to turn off caching entirely). While you can set all caching options in Configuration file, then caching is used in the order of priority. Memcache is the fastest option in most cases, thus if this is used then other settings are ignored. Second is APC, then Database cache and then filesystem cache.</p>
+				
+				<p>Please note that in most cases the filesystem cache is faster than database cache. Database cache is only provided as an option in case caching storage needs to be shared across servers.</p>
+					
+				<h3>Filesystem Cache</h3>
+				
+					<p>Filesystem cache is used by default in Wave Framework. Filesystem stores its cache in '/filesystem/cache/' folder and its subfolders. Filesystem cache does not require additional configuration, the only thing that is needed is that the '/filesystem/' folders need to be writable by PHP.</p>
+				
+				<h3>Database Cache</h3>
+				
+					<p>Database cache is an alternative caching options for Wave Framework if APC and Memcache are not supported. Database cache allows to store cache in a database table. This database caching table should be in the same database that is defined in Configuration file.</p>
+					
+					<p>To use database caching then you should turn on the 'cache-database' setting in Configuration and also define the connection settings. If connection settings are not set, then the main configuration settings are used for the connection.</p>
+					
+					<p>Database caching assumes a single table with three columns that it uses for cache, here is the recommended database structure (with the default table name 'cache' and their columns):</p>
+					
+					<ul>
+						<li><b>cache</b> - This is the default table name</li>
+						<li><b>address</b> - This should be a VARCHAR(32) and cache addresses are stored here. This column should act as primary key.</li>
+						<li><b>timestamp</b> - This should be INT column that stores Unix timestamps of the time when cache was created.</li>
+						<li><b>data</b> - This stores cache data itself. This should be as long as needed (the maximum cache you expect to be stored). This should generally be LONGTEXT or LONGBLOB (recommended) type just to be safe.</li>
+					</ul>
+				
+				<h3>APC</h3>
+				
+					<p>APC caching has two benefits for any PHP system. APC allows to cache 'compiled' PHP scripts, thus giving an average performance speed increase of up to 80%. But APC also includes a simple storage of variables to cache. If 'apc' setting is set to 1 in Coniguration, then APC will be used as the storage engine for Data Handler and API Handler cache files.</p>
+					
+					<p>Note that this type of caching stores two keys in APC, one for data and another for timestamp.</p>
+				
+				<h3>Memcache</h3>
+				
+					<p>Memcache can strongly improve caching of a web service or a website. This is the recommended caching solution for most high traffic websites, but since PHP does not support it by default and it requires a separate server or service to be run, it is not an option on most hosting services (especially on shared hosting).</p>
+					
+					<p>You can turn on Memcache by setting the value 'memcache' in Configuration file to 1. Note that this type of caching stores two keys in Memcache, one for data and another for timestamp.</p>
+						
+	</body>
+</html>

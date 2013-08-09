@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Data Handler - Wave Framework</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width"/> 
+		<link type="text/css" href="../style.css" rel="stylesheet" media="all"/>
+		<link rel="icon" href="../../favicon.ico" type="image/x-icon"/>
+		<link rel="icon" href="../../favicon.ico" type="image/vnd.microsoft.icon"/>
+	</head>
+	<body>
+	
+		<h1>Data Handler</h1>
+		
+			<ul>
+				<li><a href="#index-files">Files</a></li>
+				<li><a href="#index-introduction">Introduction</a></li>
+				<li><a href="#index-workflow">Workflow</a></li>
+			</ul>
+		
+			<h2 id="index-files">Files</h2>
+			
+				<h3>/engine/handler.data.php</h3>
+		
+			<h2 id="index-introduction">Introduction</h2>
+			
+				<p>Data Handler is loaded in situations when other handlers were not used, which is most commonly for regular web page requests. Data Handler takes all the input from GET, POST, FILES; SESSION and COOKIE variables, loads Wave Framework API and sends all the input to the API. It first uses <a href="guide_url.htm">URL Controller</a> to find out what page the user agent is looking for and then a <a href="guide_view.htm">View Controller</a> to generate that requested page.</p>
+			
+			<h2 id="index-workflow">Workflow</h2>
+			
+				<p>This script can only be executed through <a href="gateway.htm">Index Gateway</a> and it throws a 403 Forbidden message if accessed directly.</p>
+				
+				<p>It sets URL and View cache timeouts to 0, if either of them are not defined in configuration.</p>
+				
+				<p>Data Handler loads <a href="state.htm">State</a> Class and creates a new <a href="state.htm">State</a> object with the current configuration array. <a href="configuration.htm">Configuration</a> is required by the API that Data Handler uses.</p>
+				
+				<p>If database settings are set in configuration, then it also loads <a href="database.htm">Database</a> class and creates a new database object which is stored in <a href="state.htm">State</a>.</p>
+				
+				<p>Data Handler also loads autoload script from either /overrides/resources/scripts/script.php or from /resources/scripts/script.php, this file can include function definitions or other PHP-related functionality. It is only recommended to store additional functionality in Autoload script if absolutely necessary, such as for functions that are used by every page call.</p>
+				
+				<p>Data Handler loads <a href="api.htm">API</a> Class and creates a new API object with the current <a href="state.htm">State</a>.</p>
+				
+				<p>First it sends the current requested URL to <a href="guide_url.htm">URL Controller</a> with 'url-solve' command, which determines what view the user agent is requesting, what language is currently defined and so on. <a href="guide_url.htm">URL Controller</a> also redirects the client, if the URL seems to be in incorrect format. <a href="guide_url.htm">URL Controller</a> detects the View that should be loaded based on sitemap configuration stored in /resources/[language].sitemap.ini files.</p>
+				
+				<p>All input data from POST, GET, FILES and COOKIE arrays are merged into a single input array, which works similarly to $_REQUEST. Sessions are also started, if session cookie is detected. Session data is stored as 'www-session', but this is assigned by API itself and not by the handlers.</p>
+				
+				<p>Data Handler makes a new <a href="guide_api.htm">API</a> call to <a href="guide_view.htm">View Controller</a>, which is usually the file from /controllers/controller.view.php but other <a href="guide_view.htm">View Controllers</a> (and Controller methods) can be called. <a href="guide_view.htm">View Controller</a> will load the appropriate views and return data to user agent.</p>
+				
+				<p>Data Handler also makes an entry in the log file about the request, if <a href="logger.htm">Logger</a> is used.</p>
+			
+	</body>
+</html>

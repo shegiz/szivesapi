@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Factory Class - Wave Framework</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width"/> 
+		<link type="text/css" href="../style.css" rel="stylesheet" media="all"/>
+		<link rel="icon" href="../../favicon.ico" type="image/x-icon"/>
+		<link rel="icon" href="../../favicon.ico" type="image/vnd.microsoft.icon"/>
+	</head>
+	<body>
+	
+		<h1>Factory Class</h1>
+		
+			<ul>
+				<li><a href="#index-files">Files</a></li>
+				<li><a href="#index-introduction">Introduction</a></li>
+				<li><a href="#index-using-factory-class">Using Factory Class</a></li>
+				<li><a href="#index-factory-class-parameters">Factory Class Parameters</a></li>
+				<li><a href="#index-factory-class-methods">Factory Class Methods</a></li>
+				<li><a href="#index-factory-class-wrapper-methods-for-state-class">Factory Class Wrapper Methods for State Class</a></li>
+				<li><a href="#index-factory-class-wrapper-methods-for-api-class">Factory Class Wrapper Methods for API Class</a></li>
+				<li><a href="#index-factory-class-wrapper-methods-for-database-class">Factory Class Wrapper Methods for Database Class</a></li>
+			</ul>
+		
+			<h2 id="index-files">Files</h2>
+			
+				<h3>/engine/class.www-factory.php</h3>
+		
+			<h2 id="index-introduction">Introduction</h2>
+			
+				<p>Factory class is the base class for a lot of Wave Framework dynamically loaded model, view and controller objects. It is not required to build your <a href="guide_mvc.htm">MVC</a> objects by extending Factory class, but doing so can make the development of these objects easier, as Factory also has wrappers to <a href="guide_state.htm">State</a>, Wave Framework <a href="guide_api.htm">API</a> and other functionality.</p>
+				
+				<p>Factory class includes methods that dynamically load <a href="guide_mvc.htm">MVC</a> objects as well as other classes that have been defined in the system. This includes internal Wave Framework classes such as <a href="imager.htm">Imager</a>, <a href="minifier.htm">Minifier</a> and <a href="database.htm">Database</a> classes.</p>
+				
+				<p>A lot of the methods defined in Factory class are wrappers. These wrapper methods are documented further in their own class-specific documentation files and are listed in this documentation here only for reference.</p>
+				
+			<h2 id="index-using-factory-class">Using Factory class</h2>
+			
+				<p>Factory class is an internal Wave Framework class and should not be used outside the context of Wave Framework.</p>
+				
+			<h2 id="index-factory-class-parameters">Factory Class Parameters</h2>
+			
+				<h3>private $WWW_API=false</h3>
+				
+					<p>This variable holds the API object that is currently used by Wave Framework and Factory. API object is the core engine of Wave Framework.</p>
+					
+				<h3>private $WWW_API_callIndex=0</h3>
+				
+					<p>This is an internal variable that holds a counter of how many times the API has been called.  It is possible to call <a href="guide_api.htm">API</a> calls within other <a href="guide_api.htm">API</a> calls, so this is used to keep track of how deep the current <a href="guide_api.htm">API</a> call is, which is used to calculate buffering layers and other internal functionality in <a href="api.htm">API</a> Class.
+					
+			<h2 id="index-factory-class-methods">Factory Class Methods</h2>
+			
+				<h3>final public function __construct($api=false,$callIndex=0)</h3>
+				
+					<p>Construction method of Factory class initializes currently used API and <a href="guide_api.htm">API</a> call index settings within the new object that is extended from Factory. This method will also call __initialize() method, if such a method is set in the class that is extended from Factory, as it is not allowed to overwrite __construct class itself.</p>
+			
+				<h3>final protected function api($command,$inputData=array(),$useBuffer=true)</h3>
+				
+					<p>This method is used by objects, that have been extended from Factory class, to make new <a href="guide_api.htm">API</a> calls to Wave Framework. It takes a 'www-command' value in $command variable and an array of key and value pairs in $inputData variable that is used as input data. If $useBuffer is set to true, then API is told that it can use an internal <a href="guide_api.htm">API</a> buffer call, which means that if API has already gotten the same exact <a href="guide_api.htm">API</a> call with the same exact input variables, then it returns the result from buffer directly rather than execute it again.</p>
+			
+				<h3>final protected function apiConnection($address)</h3>
+				
+					<p>This method is used to initialize PHP API Wrapper object. This object can be used to send <a href="guide_api.htm">API</a> calls to other API systems, that have been built on Wave Framework, over HTTP. $address is the API address URL that Wave Framework connects with. This method returns a new API Wrapper object.</p>
+					
+				<h3>final protected function getModel($model,$methodName=false,$methodData=array())</h3>
+				
+					<p>This is one of the core methods of Factory class. This method is used to return a new Wave Framework model. Model name is $model and it should exist as a file in /models/ or /overrides/models/ subfolder as model.[$model].php file. If $methodName is set, then this method will also automatically call that method and return result of that method instead of the model object itself. If $methodData is also set, then this is the input variable sent to $methodName.</p>
+					
+				<h3>final protected function getController($controller,$methodName=false,$methodData=array())</h3>
+				
+					<p>This is one of the core methods of Factory class. This method is used to return a new Wave Framework controller. Controller name is $controller and it should exist as a file in /models/ or /overrides/models/ subfolder as controller.[$controller].php file. If $methodName is set, then this method will also automatically call that method and return result of that method instead of the controller object itself. If $methodData is also set, then this is the input variable sent to $methodName.</p>
+					
+				<h3>final protected function getView($view,$methodName=false,$methodData=array())</h3>
+				
+					<p>This is one of the core methods of Factory class. This method is used to return a new Wave Framework view. View name is $view and it should exist as a file in /models/ or /overrides/models/ subfolder as view.[$view].php file. If $methodName is set, then this method will also automatically call that method and return result of that method instead of the view object itself. If $methodData is also set, then this is the input variable sent to $methodName.</p>
+			
+				<h3>final protected function getObject($className,$methodName=false,$methodData=array())</h3>
+				
+					<p>This method loads and returns a new object for a class $className. Factory attempts to load this class definition from a file in /resources/classes/ or /overrides/resources/classes/ folder and file name should be written in format class.[$className].php in that folder. If $methodName is set, then this method will also automatically call that method and return result of that method instead of the view object itself. If $methodData is also set, then this is the input variable sent to $methodName.</p>
+			
+				<h3>final protected function loadLibrary($libraryName,$functionName=false,$methodData=false)</h3>
+				
+					<p>This method is used to dynamically load a library in /resources/libaries/ subfolder. If additional parameters are set, then this method can also automatically call one of the methods in the file.</p>
+			
+				<h3>final protected function getImager($source=false)</h3>
+				
+					<p>This method loads <a href="imager.htm">Imager</a> class that is used for image editing. If $source is set, then it also automatically assigns a source image file for that <a href="imager.htm">Imager</a>.</p>
+			
+				<h3>final protected function applyImager($source,$parameters,$target=false)</h3>
+				
+					<p>This is a wrapper method for <a href="imager.htm">Imager</a> class method commands(). This method allows to load a file, edit a file and store a file in <a href="filesystem.htm">Filesystem</a> in just a single method call. $source should be the image file in <a href="filesystem.htm">Filesystem</a>, $parameters is the Wave Framework styled <a href="handler_image.htm">Image Handler</a> accepted parameter string, like '320x240&amp;filter(grayscale)' and $target should be the destination address for the file. If $target is missing then result is pushed to output buffer.</p>
+			
+				<h3>final protected function applyMinifier($data,$type)</h3>
+				
+					<p>This method is used to apply static Minifier class method to a text string. $data should be the data string to be modified and $type should be the format type (either xml, html, js or css). This method returns modified string that is minified by Minifier class.</p>
+					
+				<h3>final protected viewData($variable=false)</h3>
+				
+					<p>This is just a wrapper function for getting state data for view. This method returns $variable from the current view settings or the entire view data array, if this is not set.</p> 
+					
+				<h3>final protected getStorage($key=false)</h3>
+				
+					<p>This is just a wrapper function for getting state from global state storage. This method returns $variable from the storage or the whole storage at once if this is not set.</p>
+					
+				<h3>final protected setStorage($key,$value)</h3>
+				
+					<p>This is just a wrapper function for getting state from global state storage. This method returns $variable from the storage or the whole storage at once if this is not set.</p> 
+					
+				<h3>final protected function viewHeader($content,$type='other')</h3>
+				
+					<p>This method allows you to send View Controller additional headers. This means that your views, models and controllers can all affect additional files that are loaded when View is returned to the browser. This allows for an extensive flexibility when building a dynamic back-end-front-end relations. $type can be 'script', 'library' or 'style' and they are loaded from '/resources/scripts/', '/resources/libraries/' or '/resources/styles/' folders. If type is not assigned or set to 'other', then the entire $content string will be added to the end of the HTML header.</p>
+					
+				<h3>final protected function resultError($message='Error',$customData=false,$responseCode=300)</h3>
+				
+					<p>Wave Framework <a href="guide_mvc.htm">MVC</a> object method calls can return their data in whatever format developer finds necessary, but it is recommended to return data in a standardized form. This method returns an array in the format of an error. $message should be the verbose message returned, $customData should be an array of data returned as part of the result and $responseCode should be an response code in 3XX namespace, which is used for errors in Wave Framework.</p>
+			
+				<h3>final protected function resultFalse($message='OK',$customData=false,$responseCode=400)</h3>
+				
+					<p>Wave Framework <a href="guide_mvc.htm">MVC</a> object method calls can return their data in whatever format developer finds necessary, but it is recommended to return data in a standardized form. This method returns an array in the format of a false result, which should be used when an action failed but is not considered an error. $message should be the verbose message returned, $customData should be an array of data returned as part of the result and $responseCode should be a response code in 4XX namespace, which is used for false results in Wave Framework.</p>
+			
+				<h3>final protected function resultTrue($message='OK',$customData=false,$responseCode=500)</h3>
+				
+					<p>Wave Framework <a href="guide_mvc.htm">MVC</a> object method calls can return their data in whatever format developer finds necessary, but it is recommended to return data in a standardized form. This method returns an array in the format of a successful result. $message should be the verbose message returned, $customData should be an array of data returned as part of the result and $responseCode should be an response code in 5XX namespace, which is used for successful results in Wave Framework.</p>
+			
+				<h3>final protected function checkTrueFalse($data)</h3>
+				
+					<p>This method is used to check for standardized <a href="guide_api.htm">API</a> call result and determine if the <a href="guide_api.htm">API</a> call was successful or not. It essentially checks for response codes in the array. $data is the result data array that is checked.</p>
+			
+				<h3>final protected function checkError($data)</h3>
+				
+					<p>This method is used to check for standardized <a href="guide_api.htm">API</a> call result and determine if the <a href="guide_api.htm">API</a> call had an error. It essentially checks for response codes in the array. $data is the result data array that is checked.</p>
+					
+				<h3>final protected function disableCache($state=true)</h3>
+				
+					<p>This method will tell Wave Framework API not to cache current <a href="guide_api.htm">API</a> call, no matter what. This means that while current <a href="guide_api.htm">API</a> call may be loaded from cache, but in case the cache does not exist the result will not be written to cache.</p>
+					
+				<h3>final protected function getReturnType()</h3>
+				
+					<p>This returns the www-return-type of currently known <a href="guide_api.htm">API</a> request. This can be used to modify the request response based on what data is requested, if this is needed.</p>
+					
+				<h3>final protected function apiVersion()</h3>
+				
+					<p>This method returns the currently used API version number. These version numbers can be used for versioning or other checks.</p>
+					
+				<h3>final protected function dbNew($type,$host,$database,$username,$password,$showErrors=false,$persistentConnection=false)</h3>
+				
+					<p>This method can be used to dynamically create a new database connection object from <a href="database.htm">Database</a> class. $type is the database type, $host, $database, $username, $password are database connection credentials. And $showErrors defines whether errors should be thrown if encountered and $persistentConnection sets whether connection should be reused, if such already exists.</p>
+					
+				<h3>final protected function dbPDO()</h3>
+				
+					<p>This method returns the PDO class that API is currently using, if one is active.</p>
+					
+				<h3>final protected function isDeveloper()</h3>
+				
+					<p>This checks whether developer IP and user agent access the system. This is a light check that can be used to test out features for developers while other IP's and user agents are not affected. It returns true if developer browser and IP is detected.</p>
+			
+			<h2 id="index-factory-class-wrapper-methods-for-state-class">Factory Class Wrapper Methods for State Class</h2>
+			
+				<p>Descriptions of these methods are detailed in <a href="state.htm">State</a> Class documentation.</p>
+				
+				<h3>final protected function getState(*)</h3>
+			
+				<h3>final protected function setState(*)</h3>
+			
+				<h3>final protected function getTranslations($language=false,$keyword=false,$subkeyword=false)</h3>
+			
+				<h3>final public function getContent($name,$language=false)</h3>
+			
+				<h3>final protected function getSitemap($language=false,$keyword=false)</h3>
+			
+				<h3>final protected function getSitemapRaw($language=false,$keyword=false)</h3>
+				
+				<h3>final protected function stateMessenger($address,$overwrite=false)</h3>
+			
+				<h3>final protected function setMessengerData($key,$value=false)</h3>
+				
+					<p>This method stores data $value under key of $key. It also turns off caching of the current <a href="guide_api.htm">API</a> call as a result, since <a href="guide_messenger.htm">State Messenger</a> is outside the scope of caching. Additionally using this function also turns off caching of the page which uses it.</p>
+			
+				<h3>final protected function callTool($type,$arg1=false,$arg2=false)</h3>
+			
+				<h3>final protected function unsetMessengerData($key=false)</h3>
+			
+				<h3>final protected function getMessengerData($key=false,$remove=true)</h3>
+				
+					<p>This method returns data from State messenger. It either returns all the data from initialized state messenger, or just a $key from it. If $remove is set, then data is also set for deletion after it has been accessed. Additionally using this function also turns off caching of the page which uses it.</p>
+			
+				<h3>final protected function startSession($configuration=false)</h3>
+			
+				<h3>final protected function regenerateSession($deleteOld=true)</h3>
+			
+				<h3>final protected function setSession($key,$value)</h3>
+			
+				<h3>final protected function getSession($key=false)</h3>
+			
+				<h3>final protected function unsetSession($key=false)</h3>
+			
+				<h3>final protected function setCookie($key,$value,$configuration=array())</h3>
+			
+				<h3>final protected function getCookie($key)</h3>
+			
+				<h3>final protected function unsetCookie($key)</h3>
+			
+				<h3>final public function setUser($data)</h3>
+			
+				<h3>final public function getUser($key=false)</h3>
+			
+				<h3>final public function unsetUser()</h3>
+			
+				<h3>final protected function checkPermissions($check)</h3>
+			
+				<h3>final protected function getPermissions()</h3>
+			
+				<h3>final protected function setPermissions($permissions)</h3>
+			
+				<h3>final public function unsetPermissions()</h3>
+			
+				<h3>final public function getPublicToken($regenerate=false,$forced=false)</h3>
+				
+				<h3>final public function checkPublicToken()</h3>
+				
+				<h3>final public function setHeader($header,$replace=true)</h3>
+				
+				<h3>final public function unsetHeader($header)</h3>
+				
+				<h3>final protected function terminal($command)</h3>
+			
+			<h2 id="index-factory-class-wrapper-methods-for-api-class">Factory Class Wrapper Methods for API Class</h2>
+			
+				<p>Descriptions of these methods are detailed in <a href="api.htm">API</a> class documentation.</p>
+			
+				<h3>final protected function clearBuffer()</h3>
+				
+				<h3>final protected function unsetTaggedCache($tags)</h3>
+			
+				<h3>final protected function getExistingCache()</h3>
+			
+				<h3>final protected function getExistingCacheTime()</h3>
+			
+				<h3>final protected function setCache($key,$value,$tags=false)</h3>
+			
+				<h3>final protected function getCache($key)</h3>
+			
+				<h3>final protected function cacheTime($key)</h3>
+			
+				<h3>final protected function unsetCache($key)</h3>
+				
+				<h3>final protected function encryptData($data,$key,$secretKey=false)</h3>
+			
+				<h3>final protected function decryptData($data,$key,$secretKey=false)</h3>
+			
+				<h3>final protected function logEntry($key,$data=false)</h3>
+			
+				<h3>final protected function splitTime($key='api')</h3>
+				
+				<h3>final protected function filter($string,$type,$exceptions=false)</h3>
+				
+				<h3>final protected function resultStream($stream)</h3>
+				
+				<h3>final protected function resultFile($location,$name=false,$contentType=false)</h3>
+			
+			<h2 id="index-factory-class-wrapper-methods-for-database-class">Factory Class Wrapper Methods for Database Class</h2>
+			
+				<p>Descriptions of these methods are detailed in <a href="database.htm">Database</a> class documentation.</p>
+				
+				<h3>final protected function dbSingle($query,$variables=array())</h3>
+			
+				<h3>final protected function dbMultiple($query,$variables=array())</h3>
+			
+				<h3>final protected function dbCommand($query,$variables=array())</h3>
+			
+				<h3>final protected function dbLastId()</h3>
+			
+				<h3>final protected function dbTransaction()</h3>
+			
+				<h3>final protected function dbRollback()</h3>
+			
+				<h3>final protected function dbCommit()</h3>
+			
+				<h3>final protected function dbQuote($value,$type='escape',$stripQuotes=false)</h3>
+			
+				<h3>public function dbArray($array,$key,$unique=true)</h3>
+			
+				<h3>public function dbDebug($query,$variables=array())</h3>
+
+	</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Creating Objects - Wave Framework</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width"/> 
+		<link type="text/css" href="../style.css" rel="stylesheet" media="all"/>
+		<link rel="icon" href="../../favicon.ico" type="image/x-icon"/>
+		<link rel="icon" href="../../favicon.ico" type="image/vnd.microsoft.icon"/>
+	</head>
+	<body>
+	
+		<h1>Creating Objects Dynamically</h1>
+		
+			<ul>
+				<li><a href="#index-introduction">Introduction</a></li>
+				<li><a href="#index-loading-libraries">Loading Libraries</a></li>
+				<li><a href="#index-loading-objects">Loading Objects</a></li>
+				<li><a href="#index-construction-methods">Construction Methods</a></li>
+				<li><a href="#index-javascript-factory">JavaScript Factory</a></li>
+			</ul>
+		
+			<p>This documentation covers functionality of objects that use a class that is extended from WWW_Factory class. Methods and calls in this documentation can be used when building your Models, Views and Controller classes and their functionality.</p>
+		
+			<h2 id="index-introduction">Introduction</h2>
+			
+				<p>Wave Framework is built around the concept that every object of the system is loaded dynamically. This is done through Factory and every object in a system built on top of Wave Framework benefits from being extended from that Factory since the Factory gives additional functionality to each of those objects.</p>
+				
+				<p>Of course it is also possible to include Models, Views and Controllers and other objects that are not extended from Factory, so both options are there.</p>
+				
+				<p>Dynamic loading of objects is useful for one big reason: this means that your system only loads the resources and classes that it actually needs and actually uses. This lowers the amount of memory your system takes during a request as well as increases the processing speed of your requests.</p>
+				
+			<h2 id="index-loading-libraries">Loading Libraries</h2>
+			
+				<p>Function libraries should never be declared global and accessible all over the software, since if most of your software never uses these functions, then such a functionality only adds weight to your software and how quickly it can respond to requests.</p>
+				
+				<p>Factory class allows you to easily load libraries dynamically. Dynamically loaded libraries need to follow these rules:</p>
+				
+					<ul>
+						<li>Libraries have to be stored in /resources/libraries/ folder</li>
+						<li>Library filename has to be [name].php</li>
+					</ul>
+					
+				<p>You can then load libraries like this:</p>
+				
+<pre>
+	<code>
+	$model=$this->loadLibrary('example');
+	</code>
+</pre>
+
+				<p>You can also dynamically call one of the functions from that library in the same call and return results from that call:</p>	
+				
+<pre>
+	<code>
+	$model=$this->loadLibrary('example','myfunction');
+	</code>
+</pre>
+
+				<p>Note that the callback function does not have to be from within the library itself, it can be a function that is already defined elsewhere previously.</p>
+
+				<p>There is also an option to load JavaScript script and library files as well as CSS stylesheets from within Views (but also allowed from Models and Controllers, though this is not recommended). This means that you can tell within a View to load a specific script file and View Controller will take this into account when building the headers. To do this you can call this:</p>
+				
+<pre>
+	<code>
+	// This adds a CSS stylesheet to the request headers (from '/resources/styles/' folder)
+	$this->viewHeader('my-style.css','style');
+	// This adds a JavaScript file to the request headers (from '/resources/scripts/' folder)
+	$this->viewHeader('my-script.js','script');
+	// This adds a JavaScript library file to the request headers (from '/resources/libraries/' folder)
+	$this->viewHeader('my-library.js','library');
+	// This adds the entire string in the end right between HTML head tags
+	$this->viewHeader('&lt;meta name=&quot;test&quot; value=&quot;Lorem Ipsum&quot;/&gt;');
+	</code>
+</pre>
+				
+			<h2 id="index-loading-objects">Loading Objects</h2>
+			
+				<p>Wave Framework groups classes in four: Models, Views, Controllers and Objects. You can read more about the purpose of each of those classes in <a href="guide_mvc.htm">MVC</a> Pattern documentation page. But in order for these objects to be loaded dynamically, there are a couple of rules that have to be followed.</p>
+				
+				<h3>Models</h3>
+				
+					<p>Dynamically loaded models need to follow these rules:</p>
+				
+					<ul>
+						<li>Models have to be stored in /models/ folder</li>
+						<li>Model filename has to be model.[name].php</li>
+						<li>Model class name has to be WWW_model_[name]</li>
+						<li>It is recommended for the model to be extended from WWW_Factory class</li>
+					</ul>
+				
+					<p>In order to load a model dynamically, you have to call getModel() method, like this:</p>
+					
+<pre>
+	<code>
+	$model=$this->getModel('example');
+	</code>
+</pre>
+
+					<p>The above code would load the class from '/models/model.example.php' and then create the object from class that is named 'WWW_model_example'. After this the model can be used in any way you would otherwise use an object, to call methods and so on and so forth.</p>
+					
+					<p>It is also possible to dynamically load a class, create an object, and call a method of that object with data all in a single method call. For example, this would do the same thing as the previous example, except it would also call a method called 'test()' with input data sent to that method:</p>
+					
+<pre>
+	<code>
+	$input='some-input-string';
+	$result=$this->getModel('example','test',$input);
+	</code>
+</pre>
+
+					<p>After this call, the above example's $result variable would contain the result from that method and not the object itself. This is useful in some cases, where you know that you only need to use an object once.</p>
+					
+				<h3>Views</h3>
+				
+					<p>Dynamically loaded views need to follow these rules:</p>
+				
+					<ul>
+						<li>Views have to be stored in /views/ folder</li>
+						<li>View filename has to be view.[name].php</li>
+						<li>View class name has to be WWW_view_[name]</li>
+						<li>It is recommended for the view to be extended from WWW_Factory class</li>
+					</ul>
+				
+					<p>In order to load the view dynamically, you have to call getView() method, like this:</p>
+					
+<pre>
+	<code>
+	$view=$this->getView('example');
+	</code>
+</pre>
+
+					<p>The above code would load the class from '/views/view.example.php' and then create the object from class that is named 'WWW_view_example'. After this the view can be used in any way you would otherwise use an object, to call methods and so on and so forth.</p>
+					
+					<p>It is also possible to dynamically load a class and execute a method in that class. This is done similarly to Models and you should refer to examples about Models as shown above to see how that is done.</p>
+					
+				<h3>Controllers</h3>
+				
+					<p>Dynamically loaded controllers need to follow these rules:</p>
+				
+					<ul>
+						<li>Controllers have to be stored in /controllers/ folder</li>
+						<li>Controller filename has to be controller.[name].php</li>
+						<li>Controller class name has to be WWW_controller_[name]</li>
+						<li>It is recommended for the controller to be extended from WWW_Factory class</li>
+					</ul>
+				
+					<p>In order to load the controller dynamically, you have to call getController() method, like this:</p>
+					
+<pre>
+	<code>
+	$controller=$this->getController('example');
+	</code>
+</pre>
+
+					<p>The above code would load the class from '/controllers/controller.example.php' and then create the object from class that is named 'WWW_controller_example'. After this the controller can be used in any way you would otherwise use an object, to call methods and so on and so forth.</p>
+					
+					<p>It is also possible to dynamically load a class and execute a method in that class. This is done similarly to Models and you should refer to examples about Models as shown above to see how that is done.</p>
+					
+				<h3>Other Objects</h3>
+				
+					<p>It is also possible to load other classes dynamically in Wave Framework. While there are some restrictions to loading these classes dynamically - for example you cannot set construction variables - sometimes it is useful when the loaded class serves occasional purpose.</p>
+					
+					<p>Dynamically loaded objects need to follow these rules:</p>
+				
+					<ul>
+						<li>Class definitions have to be stored in /resources/classes/ folder</li>
+						<li>Class filename has to be class.[name].php</li>
+						<li>Class name has to be the same as the name that is being requested</li>
+					</ul>
+					
+					<p>In order to load the object dynamically, you have to call getObject() method, like this:</p>
+					
+<pre>
+	<code>
+	$view=$this->getObject('example');
+	</code>
+</pre>
+
+					<p>The above code would load the class from '/resources/classes/class.example.php' and then create the object from class that is named 'example'. After this the object can be used in any way you would otherwise use an object, to call methods and so on and so forth.</p>
+					
+					<p>It is also possible to dynamically load a class and execute a method in that class. This is done similarly to Models and you should refer to examples about Models as shown above to see how that is done.</p>
+					
+			<h2 id="index-construction-methods">Construction Methods</h2>
+			
+				<p>PHP has a magic method called '__construct()' that is called whenever an object is created. This can be used to load additional functionality to an object when it is created, like create some <a href="guide_database.htm">Database</a> connections or initialize configuration.</p>
+				
+				<p>In Wave Framework, if your object is created from a class that is extended from WWW_Factory, then you cannot define a '__construct()' method for that object as it is not possible to overwrite the method from WWW_Factory. Instead you should define '__initialize()' method instead, as Factory's own construction will also make a call for that method, if it is defined.</p>
+				
+			<h2 id="index-javascript-factory">JavaScript Factory</h2>
+			
+				<p>Wave Framework also includes a JavaScript Factory that is more limited, than PHP Factory. But it still allows you to dynamically load Objects as well as Libraries. This is done exactly the same way. For example:</p>
+				
+<pre>
+	<code>
+	// Create a new Factory class
+	var Factory=new WWW_Factory();
+	// Get new instance of the 'example' class
+	var myExample=Factory.getObject('example');
+	// And now you can use that object like any other
+	myExample.doSomething();
+	</code>
+</pre>
+
+				<p>And you can also load libraries:</p>
+				
+<pre>
+	<code>
+	// Factory class is required
+	var Factory=new WWW_Factory();
+	// Load the library
+	Factory.loadLibrary('example');
+	// Use some function from that library
+	doSomething();
+	</code>
+</pre>
+			
+	</body>
+</html>

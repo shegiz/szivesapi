@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>State Class - Wave Framework</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width"/> 
+		<link type="text/css" href="../style.css" rel="stylesheet" media="all"/>
+		<link rel="icon" href="../../favicon.ico" type="image/x-icon"/>
+		<link rel="icon" href="../../favicon.ico" type="image/vnd.microsoft.icon"/>
+	</head>
+	<body>
+	
+		<h1>State Class</h1>
+		
+			<ul>
+				<li><a href="#index-files">Files</a></li>
+				<li><a href="#index-introduction">Introduction</a></li>
+				<li><a href="#index-using-state-class">Using State Class</a></li>
+				<li><a href="#index-state-class-parameters">State Class Parameters</a></li>
+				<li><a href="#index-state-class-methods">State Class Methods</a></li>
+			</ul>
+		
+			<h2 id="index-files">Files</h2>
+			
+				<h3>/engine/class.www-state.php</h3>
+		
+			<h2 id="index-introduction">Introduction</h2>
+			
+				<p>State class is one of the core classes of Wave Framework. State holds a lot of information about the server, configuration as well as current request. State class can be used separately from Wave Framework, but is generally not recommended, since it is tailored for use with Wave Framework.</p>
+				
+				<p>State object is also used by Wave Framework to load configuration - from '/config.ini' file - to State data variable, so that it can be used and accessed by Wave Framework <a href="guide_mvc.htm">MVC</a> classes. By default State class has a number of data variables loaded by default, to make sure that State can work even when no configuration file is loaded.</p>
+				
+				<p>State carries additional functionality: it includes a <a href="guide_messenger.htm">State Messenger</a>  as well as wrappers for creating and destroying sessions and cookies, returning translations and sitemap information and more. To learn more about specific functionality of State when used through <a href="guide_mvc.htm">MVC</a> objects of Wave Framework, you should look into "State and <a href="configuration.htm">Configuration</a>" feature guide</p>
+				
+				<p>The rest of this document details the use of <a href="logger.htm">Logger</a> class in general, often outside the scope of how Wave Framework itself uses the class. This information is useful only to developers who intend to develop core of Wave Framework or use the class independently in another project.</p>
+				
+			<h2 id="index-using-state-class">Using State class</h2>
+			
+				<p>While it is unlikely that State class can be of use outside Wave Framework, below is an example of how to create a new State object. State object is created with a <a href="configuration.htm">Configuration</a> array and some of these <a href="configuration.htm">Configuration</a> keys can affect the functionality of PHP (State will attempt to change PHP settings accordingly).</p>
+				
+<pre>
+	<code>
+	require('/engine/class.www-state.php');
+	// Configuration should be an array
+	$state=new WWW_State($config);
+	</code>
+</pre>
+
+				<p>State class is automatically used by WWW_API objects. When creating a new WWW_API object, then you can send the State class like this:</p>
+				
+<pre>
+	<code>
+	require('/engine/class.www-api.php');
+	$api=new WWW_API($state);
+	</code>
+</pre>
+				
+				<p>State defines it's own default data and then loads the $config on top of that data. Most of State data variables are directly related to data loaded from /config.ini file and it is recommended to read more about these settings from <a href="configuration.htm">Configuration</a> documentation.</p>
+				
+				<p>To change a state value, you can do this:</p>
+				
+<pre>
+	<code>
+	// Change a single setting
+	$state-&gt;setState('my-key','my-value');
+	// Change multiple settings at the same time with array of key and value pairs
+	$state-&gt;setState($config);
+	</code>
+</pre>
+
+				<h3>State Settings with Additional Functionality</h3>
+				
+					<p><b>timezone</b></p>
+					
+					<p>This also changes PHP's default timezone through date_default_timezone_set() function.</p>
+					
+					<p><b>output-compression</b></p>
+					
+					<p>This value can be set to 'deflate' or 'gzip'. But if the request making user agent does not notify the server that it supports gzip or deflate, then State automatically keeps this value set to false.</p>
+					
+					<p>Rest of the functionality of State class is too specific to Wave Framework API and it will be covered more in the feature guides.</p>
+					
+			<h2 id="index-state-class-parameters">State Class Parameters</h2>
+			
+				<h3>public $data=array()</h3>
+				
+					<p>This is the primary variable of State class and it carries representation of the system configuration, both loaded from /config.ini file as well as initialized from environmental server variables.</p>
+					
+					<h4>Overview of variables set in $data array:</h4>
+					
+					<ul>
+						<li><b>404-image-placeholder</b> - True or false flag for whether placeholder 404 image is used.</li>
+						<li><b>404-view</b> - View keyword that is loaded when <a href="guide_url.htm">URL Controller</a> cannot find a page.</li>
+						<li><b>access-control</b> - This is set as the access-control header for all requests.</li>
+						<li><b>apc</b> - True or false flag for whether the system attempts to use APC PHP accelerator.</li>
+						<li><b>api-logging</b> - If this is set to false, then API logging is not used. Otherwise this should be an array of logging flags.</li>
+						<li><b>api-permissions</b> - Array of currently set API permissions used whenever permissions are checked.</li>
+						<li><b>api-profile</b> - Currently used API profile, this is set by the API.</li>
+						<li><b>api-public-profile</b> - API profile name that is considered public.</li>
+						<li><b>api-public-token</b> - If this is set to 1, then a public API token is required to be sent with all web forms.</li>
+						<li><b>api-versions</b> - This is an array of enabled API versions.</li>
+						<li><b>cache-database</b> - Cache database configuration that consists of cache table, cache address, timestamp and data column names.</li>
+						<li><b>cache-database-address-column</b> - Database cache address/index column.</li>
+						<li><b>cache-database-data-column</b> - Column in database cache table that stores cache.</li>
+						<li><b>cache-database-errors</b> - True or false setting whether cache database calls register errors.</li>
+						<li><b>cache-database-host</b> - Cache database host address.</li>
+						<li><b>cache-database-name</b> - Cache database name.</li>
+						<li><b>cache-database-password</b> - Cache database user password.</li>
+						<li><b>cache-database-persistent</b> - If database cache connection is persistent.</li>
+						<li><b>cache-database-table-name</b> - Cache database table name.</li>
+						<li><b>cache-database-timestamp-column</b> - Cache database timestamp column that stores timestamps of cache entries.</li>
+						<li><b>cache-database-type</b> - The database type of cache connection, either mysql, sqlite, mssql, oracle, postgresql.</li>
+						<li><b>cache-database-username</b> - Cache database username.</li>
+						<li><b>client-ip</b> - IP address of the client that makes the request, this is detected by the system and takes into account proxies.</li>
+						<li><b>client-user-agent</b> - Client user agent string that makes the request.</li>
+						<li><b>content-security-policy</b> - This is the content security policy rule for loading external content.</li>
+						<li><b>database-errors</b> - True or false flag for whether database errors are logged.</li>
+						<li><b>database-host</b> - Database host name.</li>
+						<li><b>database-name</b> - Database name.</li>
+						<li><b>database-password</b> - Database access password</li>
+						<li><b>database-persistent</b> - True or false flag for whether database connection is persistent.</li>
+						<li><b>database-type</b> - Database type, either mysql, sqlite, mssql, oracle, postgresql.</li>
+						<li><b>database-username</b> - Database access username.</li>
+						<li><b>developer</b> - True or false flag whether developer mode is active.</li>
+						<li><b>developer-ip</b> - Configuration setting for developer IP address.</li>
+						<li><b>developer-user-agent</b> - Configuration setting for developer user agent.</li>
+						<li><b>directory-data</b> - Location of <a href="filesystem.htm">Filesystem</a> '/data/' folder which is used to store filesystem database files.</li>
+						<li><b>directory-filesystem</b> - Root location of <a href="filesystem.htm">Filesystem</a> folder itself.</li>
+						<li><b>directory-keys</b> - <a href="filesystem.htm">Filesystem</a> location for keys file, used for certificates.</li>
+						<li><b>directory-static</b> - <a href="filesystem.htm">Filesystem</a> folder for static files.</li>
+						<li><b>directory-system</b> - Root folder of the system.</li>
+						<li><b>directory-tmp</b> - <a href="filesystem.htm">Filesystem</a> folder for temporary files.</li>
+						<li><b>directory-user</b> - <a href="filesystem.htm">Filesystem</a> folder of user folder.</li>
+						<li><b>dynamic-color-whitelist</b> - Comma separated list of background colors allowed to be used with on-demand image loading.</li>
+						<li><b>dynamic-filter-whitelist</b> - Comma separated list of filters allowed to be used with on-demand image loading.</li>
+						<li><b>dynamic-image-filters</b> - True or false flag for whether dynamic image filters are allowed.</li>
+						<li><b>dynamic-image-loading</b> - True or false flag for whether dynamic image loading is allowed at all.</li>
+						<li><b>dynamic-max-size</b> - Maximum pixel size of dynamically loaded picture width and height.</li>
+						<li><b>dynamic-position-whitelist</b> - Comma separated list of picture positions allowed to be used with on-demand image loading.</li>
+						<li><b>dynamic-quality-whitelist</b> - Comma separated list of image quality settings allowed to be used with on-demand image loading.</li>
+						<li><b>dynamic-resource-loading</b> - True or false flag for whether dynamic resource loading is supported.</li>
+						<li><b>dynamic-size-whitelist</b> - Comma separated list of image resolutions allowed to be used with on-demand image loading.</li>
+						<li><b>enforce-first-language-url</b> - True or false flag for whether language node is required as part of the request URL.</li>
+						<li><b>enforce-url-end-slash</b> - True or false flag for whether end URL slash is required as part of the request URL.</li>
+						<li><b>errors-reporting</b> - This is the current error-reporting level, either 'off', 'critical' or 'full'.</li>
+						<li><b>errors-trace</b> - This sets if the entire trace log is written to error files if errors are encountered.</li>
+						<li><b>errors-verbose</b> - Defines whether system prints out full error details for the request</li>
+						<li><b>file-robots</b> - Robots command string for file downloads.</li>
+						<li><b>fingerprint</b> - Fingerprint string about the user agent that made the request, only used if session fingerprinting is used.</li>
+						<li><b>forbidden-extensions</b> - Array of file extensions that cannot be requested over HTTP.</li>
+						<li><b>frame-permissions</b> - This is used for the header that states if a URL can be used from a frame or not.</li>
+						<li><b>headers-set</b> - This is the list of headers to be set. Value assigns whether it should replace previously set header like that or not.</li>
+						<li><b>headers-unset</b> - This is the list of headers that should be moved.</li>
+						<li><b>home-view</b> - View keyword that is considered for 'home' or 'root' pages. This is the URL that is considered the home view from Sitemap file.</li>
+						<li><b>http-accept</b> - Array of types user agent accepts as the response.</li>
+						<li><b>http-accept-charset</b> - Array of charsets accepted by the user agent.</li>
+						<li><b>http-accept-encoding</b> - Array of character encodings accepted by the user agent.</li>
+						<li><b>http-accept-language</b> - Array of language keywords accepted by the user agent.</li>
+						<li><b>http-authentication-ip</b> - Comma-separated list of IP addresses that are allowed to log-in through HTTP authentication.</li>
+						<li><b>http-authentication-password</b> - HTTP authentication password.</li>
+						<li><b>http-authentication-username</b> - HTTP authentication username.</li>
+						<li><b>http-do-not-track</b> - True or false flag whether the user agent allows to be tracked or not.</li>
+						<li><b>http-content-length</b> - Content length of the HTTP request.</li>
+						<li><b>http-content-type</b> - Content type of the HTTP request.</li>
+						<li><b>http-host</b> - HTTP host of the server.</li>
+						<li><b>http-if-modified-since</b> - If-modified-since date if user agent sends the request with the value.</li>
+						<li><b>http-input</b> - Data stream if sent with the request, such as when sending an XML with POST.</li>
+						<li><b>http-referrer</b> - This carries the URL where the request came from. This is not sent with some browsers at all times or proxies.</li>
+						<li><b>http-request-method</b> - Request method used for current HTTP request. Usually GET or POST, but also HEAD.</li>
+						<li><b>https-mode</b> - True or false flag for whether current request uses HTTPS or not.</li>
+						<li><b>image-extensions</b> - Array of picture extensions that are served through <a href="handler_image.htm">Image Handler</a>.</li>
+						<li><b>image-robots</b> - Robots command string for pictures.</li>
+						<li><b>index-url-cache-timeout</b> - Cache lifetime for <a href="guide_url.htm">URL Controller</a> requests, for solving URL's.</li>
+						<li><b>index-view-cache-timeout</b> - Default cache lifetime for <a href="guide_view.htm">View Controller</a> requests.</li>
+						<li><b>internal-logging</b> - If this is set to false, then internal logging is not used. Otherwise this should be an array of logging flags.</li>
+						<li><b>language</b> - Currently detected language.</li>
+						<li><b>languages</b> - Array of language keywords used by the system.</li>
+						<li><b>limiter</b> - True or false flag for whether HTTP request limiter is used or not.</li>
+						<li><b>limiter-authentication</b> - True or false flag for whether HTTP authentication is used.</li>
+						<li><b>limiter-blacklist</b> - Comma-separated list of IP addresses that are blocked from making HTTP requests.</li>
+						<li><b>limiter-https</b> - True or false flag for whether HTTPS is required for requests.</li>
+						<li><b>limiter-load</b> - True or false flag for whether server load limiter is used.</li>
+						<li><b>limiter-referrer</b> - If this is set and referrer Limiter is used, then this is used to match against the domain names or throws a forbidden message otherwise.</li>
+						<li><b>limiter-request</b> - True or false flag for whether HTTP request rate-limiter is used or not.</li>
+						<li><b>limiter-whitelist</b> - Comma-separated list of IP addresses that are allowed to make HTTP requests.</li>
+						<li><b>locale</b> - This is a locale category and keyword, such as 'en_GB'.</li>
+						<li><b>memcache</b> - True or false setting whether Memcache is used.</li>
+						<li><b>memcache-host</b> - Memcache server address.</li>
+						<li><b>memcache-port</b> - Memcache port number.</li>
+						<li><b>memory-limit</b> - This is the current memory limit as it is defined in Configuration, if set.</li>
+						<li><b>output-compression</b> - Currently used output compression mode.</li>
+						<li><b>project-author</b> - Project author that is used by <a href="guide_view.htm">View Controller</a> meta tag.</li>
+						<li><b>project-copyright</b> - Project copyright information that is used by <a href="guide_view.htm">View Controller</a> meta tag.</li>
+						<li><b>project-title</b> - Project title that is used by <a href="guide_view.htm">View Controller</a> meta title.</li>
+						<li><b>request-id</b> - Unique HTTP request ID.</li>
+						<li><b>request-time</b> - Request timestamp.</li>
+						<li><b>request-true</b> - True request URI.</li>
+						<li><b>request-uri</b> - Request URI.</li>
+						<li><b>resource-cache-timeout</b> - Lifetime of resource cache.</li>
+						<li><b>resource-extensions</b> - Array of extensions that will be loaded through <a href="handler_resource.htm">Resource Handler</a>.</li>
+						<li><b>resource-robots</b> - Robots command string for resources.</li>
+						<li><b>robots</b> - Universal robots command string.</li>
+						<li><b>robots-cache-timeout</b> - Cache lifetime of robots.txt files.</li>
+						<li><b>server-ip</b> - Server IP address.</li>
+						<li><b>server-name</b> - Defined server name.</li>
+						<li><b>server-port</b> - Defined server port.</li>
+						<li><b>session-data</b> - This holds data from session storage or temporary data before it is stored in session storage.</li>
+						<li><b>session-original-data</b> - This is the session data at the start of the request, used for comparing.</li>
+						<li><b>session-domain</b> - Session cookie domain.</li>
+						<li><b>session-fingerprint</b> - True or false flag for whether sessions are tied to IP and browser fingerprint.</li>
+						<li><b>session-fingerprint-key</b> - Key value that the fingerprint will be stored under in sessions.</li>
+						<li><b>session-http-only</b> - Whether session cookie is HTTP-only or not.</li>
+						<li><b>session-id</b> - This holds the current session ID, if sessions are active.</li>
+						<li><b>session-lifetime</b> - Duration of seconds for how long sessions should last, defaults to server value of 'session.gc-maxlifetime'.</li>
+						<li><b>session-name</b> - Session name keyword.</li>
+						<li><b>session-path</b> - Session cookie path.</li>
+						<li><b>session-permissions-key</b> - Keyword that is used for storing permissions.</li>
+						<li><b>session-regenerate</b> - The amount of seconds after which session ID is regenerated automatically.</li>
+						<li><b>session-secure</b> - Whether session cookie is only usable over HTTPS.</li>
+						<li><b>session-timestamp-key</b> - Keyword in sessions that stores session timestamp.</li>
+						<li><b>session-token-key</b> - Keyword in sessions that store public request token.</li>
+						<li><b>session-user-key</b> - Keyword that is used for storing user account data.</li>
+						<li><b>sitemap</b> - Array of current language sitemap data.</li>
+						<li><b>sitemap-cache-timeout</b> - Cache lifetime of sitemap.xml files.</li>
+						<li><b>sitemap-raw</b> - Raw sitemap data in an array.</li>
+						<li><b>storage</b> - This holds temporary global storage that can be written to and read through Factory.</li>
+						<li><b>test-database-host</b> - Test database host name.</li>
+						<li><b>test-database-name</b> - Test database name.</li>
+						<li><b>test-database-password</b> - Test database access password</li>
+						<li><b>test-database-type</b> - Test database type, either mysql, sqlite, mssql, oracle, postgresql.</li>
+						<li><b>test-database-username</b> - Test database access username</li>
+						<li><b>testing</b></li> - True or false value about whether a test is currently being run or not. This is set to true when run through Test Suite.</li>
+						<li><b>time-limit</b> - This is the current time limit as it is defined in Configuration, if set.</li>
+						<li><b>timezone</b> - Currently used timezone.</li>
+						<li><b>translations</b> - Array of translations of current language.</li>
+						<li><b>trusted-proxies</b> - Array of trusted proxy IP addresses.</li>
+						<li><b>url-base</b> - Base URL that is used for HTML views and resource locations.</li>
+						<li><b>url-web</b> - Web root URL node, in case system is not installed in root of the website.</li>
+						<li><b>user-data</b> - Array of user data.</li>
+						<li><b>user-permissions</b> - Array of user permissions.</li>
+						<li><b>version</b> - This holds the application version number.</li>
+						<li><b>view</b> - Currently used view.</li>
+						<li><b>view-headers</b> - This holds headers that will be set by View Controller.</li>
+					</ul>
+			
+				<h3>public $databaseConnection=false</h3>
+					
+					<p>This should hold <a href="database.htm">Database</a> class and connection data, if used.</p>
+					
+				<h3>private $sessionHandler=false</h3>
+				
+					<p>This holds the session handler for session management. This is a WWW_Sessions class from '/engine/class.www-sessions.php' file.</p>
+					
+				<h3>private $sessionStarted=false</h3>
+				
+					<p>This is an internal variable that State uses to check if it has already validated sessions or not.</p>
+					
+				<h3>private $messenger=false</h3>
+				
+					<p>This holds the 'keyword' or 'passkey' of currently used <a href="guide_messenger.htm">State Messenger</a> .</p>
+			
+				<h3>private $messengerData=array()</h3>
+				
+					<p>This holds <a href="guide_messenger.htm">State Messenger</a> data as an array.</p>
+					
+				<h3>private $tools=false</h3>
+				
+					<p>This holds system <a href="tool.htm">Tool Class</a> object, if it exists.</p>
+					
+			<h2 id="index-state-class-methods">State Class Methods</h2>
+			
+				<p>The methods of State class are considered 'final' mainly due to them being core and expected by Wave Framework API and Factory classes.</p>
+			
+				<h3>final public function __construct($config=array()){</h3>
+				
+					<p>Construction of State object initializes the defaults for $data variable. A lot of the data is either loaded from /config.ini file or initialized based on server environment variables. Fingerprint string is also created during construction as well as input data loaded from XML or JSON strings, if sent with POST directly.</p>
+				
+				<h3>final public function __destruct()</h3>
+				
+					<p>When State class is not used anymore, then <a href="guide_messenger.htm">State Messenger</a> data - if set - is written to <a href="filesystem.htm">Filesystem</a> based on the <a href="guide_messenger.htm">State Messenger</a> key. This method also calls the commit-session method, if it has not been called yet.</p>
+				
+				<h3>final public function getState($input)</h3>
+				
+					<p>This is the basic call to return a State variable from the object. If this method is called without any variables, then the entire State array is returned. You can send one or more key variables to this method to return a specific key from State. If you send multiple parameters then this method attempts to find keys of a key in case the State variable is an array itself. $input variable is only used within State class itself. Method returns null for keys that have not been set.</p>
+				
+				<h3>final public function setState($input)</h3>
+				
+					<p>This method is used to set a variables in the State object. If an array is passed as the first parameter, then multiple State variables are set at the same time. You can also send multiple parameters with this method to set values of multidimensional arrays stored in State, such as sending two different keys and a value as the third parameter. $input variable is only used within State class itself.</p>
+				
+				<h3>final private function stateChanged($variable,$value=true)</h3>
+				
+					<p>This is a private method used internally whenever configuration is changed. It has checks for cases when a variable is changed that carries additional functionality such as when changing the timezone or output compression. For example, if output compression is set, but not supported by user agent that is making the request, then output suppression is turned off.</p>
+				
+				<h3>final public function commitHeaders()</h3>
+				
+					<p>This function is called before output is pushed to browser by the API or when State object is not used anymore. This method is not accessible to Factory class, but it is not private.</p>
+					
+				<h3>final public function getTranslations($language=false,$keyword=false,$subkeyword=false)</h3>
+				
+					<p>This method returns an array of currently active translations, or for a language set with $language variable. If $keyword is also set, then it returns a specific translation with that keyword from $language translations. If $keyword is an array, then $subkeyword can be used to return specific translation from that keyword.</p>
+				
+				<h3>final public function getContent($name,$language=false)</h3>
+				
+					<p>This method includes or reads in a file from '/resources/content/' folder $name is the modified filename that can also include subfolders, but without the language prefix and without extension in the filename itself. If $language is not defined then currently active language is used.</p>
+				
+				<h3>final public function getSitemapRaw($language=false,$keyword=false)</h3>
+				
+					<p>This method returns an array of currently active sitemap, or a sitemap for a language set with $language variable. If $keyword is also set, then it returns a specific sitemap node with that keyword from $language sitemap file. This method returns the original, non-modified sitemap that has not been parsed for use with <a href="guide_url.htm">URL Controller</a>.</p>
+				
+				<h3>final public function getSitemap($language=false,$keyword=false)</h3>
+				
+					<p>This returns sitemap array that is modified for use with <a href="guide_view.htm">View Controller</a> and other parts of the system. It returns sitemap for current language or a language set with $language variable and can return a specific sitemap node based on $keyword.</p>
+				
+				<h3>final public function stateMessenger($address,$overwrite=false)</h3>
+				
+					<p>This method initializes <a href="guide_messenger.htm">State Messenger</a>  by giving it an address and assigning the file that <a href="guide_messenger.htm">State Messenger</a>  will be stored under. If the file already exists and $overwrite is not turned on, then it automatically loads contents of that file from <a href="filesystem.htm">Filesystem</a>.</p>
+				
+				<h3>final public function setMessengerData($data,$value=false)</h3>
+				
+					<p>This writes data to <a href="guide_messenger.htm">State Messenger</a> . $data is the key and $value is the value of the key. $data can also be an array of keys and values, in which case multiple values are set at the same time.</p>
+				
+				<h3>final public function unsetMessengerData($key=false)</h3>
+				
+					<p>This method removes key from <a href="guide_messenger.htm">State Messenger</a>  based on value of $key. If $key is not set, then the entire <a href="guide_messenger.htm">State Messenger</a>  data is cleared.</p>
+				
+				<h3>final public function getMessengerData($key=false,$remove=true)</h3>
+				
+					<p>This method returns data from State messenger. It either returns all the data from initialized state messenger, or just a $key from it. If $remove is set, then data is also set for deletion after it has been accessed.</p>
+				
+				<h3>final public function setUser($data)</h3>
+				
+					<p>This method sets user data array in session. This is a simple helper function used for holding user-specific data for a web service. $data is an array of user data.</p>
+				
+				<h3>final public function getUser($key=false)</h3>
+				
+					<p>This either returns the entire user data array or just a specific $key of user data from the session.</p>
+				
+				<h3>final public function unsetUser()</h3>
+				
+					<p>This unsets user data and removes the session of user data.</p>
+				
+				<h3>final public function setPermissions($permissions)</h3>
+				
+					<p>This method sets an array of $permissions or a comma-separated string of permissions for the current user permissions session.</p>
+				
+				<h3>final public function getPermissions()</h3>
+				
+					<p>This method returns an array of currently set user permissions from the session.</p>
+				
+				<h3>final public function checkPermissions($permission)</h3>
+				
+					<p>This checks for an existence of permissions in the user permissions session array or in the API profile permissions setting. $permissions is either a comma-separated string of permissions to be checked, or an array. This method returns false when one of those permission keys is not set in the permissions session. Method returns true, if $permissions exist in the permissions session array.</p>
+				
+				<h3>final public function unsetPermissions()</h3>
+				
+					<p>This unsets permissions data from session similarly to how unsetUser() method unsets user data from session.</p>
+				
+				<h3>final public function getPublicToken($regenerate=false,$forced=false)</h3>
+				
+					<p>This method returns the currently active public token that is used to increase security against cross-site-request-forgery attacks. This method returns false if user session is not populated, in which case public token is not needed. $regenerate sets if the token should be regenerated if it already exists, this invalidates forms when Back button is used after submitting data, but is more secure. $forced is used to force token generation even if no user session is active.</p>
+				
+				<h3>final public function checkPublicToken()</h3>
+				
+					<p>This method is useful when 'api-public-token' setting is off in configuration, but you still want to protect your API method from public API requests from XSS and other attacks. This returns false if the provided public API token is incorrect.</p>
+				
+				<h3>final public function startSession($configuration=false)</h3>
+				
+					<p>This method validates current session data and checks for lifetime as well as session fingerprint. It notifies session handler if any changes have to be made. Custom session configuration can be sent with a variable. Parameters are as follows:</p>
+					
+					<ul>
+						<li><b>name</b> - Session cookie name.</li>
+						<li><b>lifetime</b> - Session cookie lifetime.</li>
+						<li><b>path</b> - URL path for session cookie.</li>
+						<li><b>domain</b> - Domain for session cookie.</li>
+						<li><b>secure</b> - Whether session cookie is for secure connections only.</li>
+						<li><b>http-only</b> - Whether session cookie is for HTTP requests only and unavailable for scripts.</li>
+						<li><b>user-key</b> - Session key for storing user data.</li>
+						<li><b>permissions-key</b> - Session key for storing user permissions.</li>
+						<li><b>fingerprint-key</b> - Session key for storing session fingerprint.</li>
+						<li><b>timestamp-key</b> - Session key for storing session timestamp.</li>
+						<li><b>token-key</b> - Session key for public request tokens for protecting against replay attacks.</li>
+						<li><b>fingerprint</b> - Session key for session fingerprinting for protecting against replay attacks.</li>
+					</ul>
+				
+				<h3>final public function regenerateSession($deleteOld=true)</h3>
+				
+					<p>This method regenerates ongoing session with a new ID. $deleteOld, if set, deletes the previous session.</p>
+				
+				<h3>final public function setSession($key=false,$value=false)</h3>
+				
+					<p>This method sets a session variable $key with a value $value. If $key is an array of keys and values, then multiple session variables are set at once.</p>
+				
+				<h3>final public function getSession($key=false)</h3>
+				
+					<p>This method returns $key value from session data. If $key is an array of keys, then it can return multiple variables from session at once. If $key is not set, then entire session array is returned. Method returns null for keys that have not been set.</p>
+				
+				<h3>final public function unsetSession($key=false)</h3>
+				
+					<p>This method unsets $key value from current session. If $key is an array of keys, then multiple variables can be unset at once. If $key is not set at all, then this simply destroys the entire session.</p>
+				
+				<h3>final public function setCookie($key,$value,$configuration=array())</h3>
+				
+					<p>This method sets a cookie with $key and a $value. $configuration is an array of cookie parameters that can be set. Parameters are as follows:</p>
+					
+					<ul>
+						<li><b>timeout</b> - This is how many seconds, since the moment cookie is created, it will not be deleted.</li>
+						<li><b>expire</b> - This is how many seconds, since the moment cookie is created, it will not be deleted. This is different from default PHP setcookie() call that just asks the timestamp. If this value is sent, then 'timeout' value will be ignored entirely.</li>
+						<li><b>path</b> - Web root path where the cookie is valid. By default the web root of the system is used.</li>
+						<li><b>domain</b> - Domain which applies to the cookie. Default is the current system domain.</li>
+						<li><b>secure</b> - Whether cookie is set only over secure connection.</li>
+						<li><b>httponly</b> - Whether cookie can be only accessed over HTTP and not with JavaScript.</li>
+					</ul>
+				
+				<h3>final public function getCookie($key)</h3>
+				
+					<p>This method returns a cookie value with the set $key. $key can also be an array of keys, in which case multiple cookie values are returned in an array. Method returns null for keys that have not been set.</p>
+				
+				<h3>final public function unsetCookie($key)</h3>
+				
+					<p>This method unsets a cookie with the set key of $key. If $key is an array, then it can remove multiple cookies at once.</p>
+					
+				<h3>final public function setHeader($header,$replace=true)</h3>
+				
+					<p>This is a simple wrapper function for setting a header. $header is the header string to be sent and $replace is a true-false flag about whether previous similar header should be replaced or not.</p>
+					
+				<h3>final public function unsetHeader($header)</h3>
+				
+					<p>This method is a wrapper function for simply removing a previously set header. $header is the header that should be removed.</p>
+					
+				<h3>final public function callTool($type,$arg1=false,$arg2=false)</h3>
+				
+					<p>This method loads tools object if it doesn't exist yet and then allows to call various methods of the tool. You can call filesystem cleaner, indexer or a file-size calculator (and each work recursively) and counter.</p>
+				
+				<h3>final public function terminal($command)</h3>
+				
+					<p>This method is wrapper function for making terminal calls. It attempts to detect what terminal is available on the system, if any, and then execute the call and return the results of the call.</p>
+			
+	</body>
+</html>

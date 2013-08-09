@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>API Calls - Wave Framework</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width"/> 
+		<link type="text/css" href="../style.css" rel="stylesheet" media="all"/>
+		<link rel="icon" href="../../favicon.ico" type="image/x-icon"/>
+		<link rel="icon" href="../../favicon.ico" type="image/vnd.microsoft.icon"/>
+	</head>
+	<body>
+	
+		<h1>Making API Calls</h1>
+		
+			<ul>
+				<li><a href="#index-introduction">Introduction</a></li>
+				<li><a href="#index-internal-api-calls">Internal API Calls</a></li>
+				<li><a href="#index-checking-the-result-of-an-api-call">Checking the Result of an API Call</a></li>
+				<li><a href="#index-making-api-requests-over-http">Making API Requests Over HTTP</a></li>
+			</ul>
+		
+			<p>This documentation covers functionality of objects that use a class that is extended from WWW_Factory class. Methods and calls in this documentation can be used when building your Models, Views and Controller classes and their functionality.</p>
+		
+			<h2 id="index-introduction">Introduction</h2>
+			
+				<p>Wave Framework is built around the internal API. Every <a href="guide_mvc.htm">MVC</a> Object built on Wave Framework can make API calls, which means that most web services and websites could incorporate nested API calls across the system.</p>
+				
+				<p>API is used internally first to see what page the client is requesting as well as for loading a view, if a page is requested. Requests to HTTP API are handled by <a href="handler_api.htm">API Handler</a> as well. And then there are internal API calls, where the objects and methods that have been called by Wave Framework through Handlers can make their own API calls.</p>
+				
+				<p>This document here doesn't cover the HTTP API use, nor does it go into detail about all the options and configuration flags of the API. It is recommended to consult with the API Documentation section that gives extensive insight about all the features within the API</p>
+				
+			<h2 id="index-internal-api-calls">Internal API Calls</h2>
+			
+				<p>While a lot of functionality can be built within Wave Framework Models, Views and Controllers by loading other <a href="guide_mvc.htm">MVC</a> objects dynamically through the getModel(), getView() and getController() methods that are detailed in Creating Objects documentation, quite often it is useful to just make an API call to the system.</p>
+				
+				<p>Making API requests internally allows you to call any functionality across your system that is already built in there. For example, if you have an API call where you load a list of your users, then you can call that API request anywhere. This is like calling a master function, except one that is dynamically loaded and takes into account the environment and current system <a href="guide_state.htm">State</a>.</p>
+				
+				<p>API requests are similar in rule to how they would be when making such a request over HTTP. You need to always provide just one thing: the command name. This command name (that in HTTP API would be defined with 'www-command' variable) is used to find what controller and what method you are requesting. Here is a simple example of making an internal API call:</p>
+				
+<pre>
+	<code>
+	$apiResult=$this->api('example-get');
+	</code>
+</pre>
+
+				<p>To make things easier for developers, you do not have to set the command name as part of an array in the request, which is why the api() methods first parameter is the actual value of 'www-command'. This is useful for cases where you have API calls that do not have any input at all.</p>
+				
+				<p>For example, to send input to the API call, you can do the following:</p>	
+				
+<pre>
+	<code>
+	$apiResult=$this->api('example-get',array('my-name'=>'Thomas'));
+	</code>
+</pre>
+				
+				<p>Another notable things about when using an internal API is that you do not have to use any API profiles for internal API calls. Internal API calls are considered to be validated already, since in order for the controller to even run, the call already has to be validated so double validation is not ever needed. All API calls are available for <a href="guide_mvc.htm">MVC</a> Objects in Wave Framework internally.</p>
+			
+				<p>Wave Framework also has an internal API buffer for calls, which means that when Wave Framework detects that you are making the same API call with the exact same input within the same HTTP request, then it returns data automatically from a buffer. This speeds up script execution if you reuse some API calls in multiple locations.</p>
+				
+				<p>You can also make Wave Framework not use the internal buffer with the following call, by setting the third variable to false:</p>
+						
+<pre>
+	<code>
+	$apiResult=$this->api('example-get',array('my-name'=>'Thomas'),false);
+	</code>
+</pre>
+
+				<p>The input data accepts all the API configuration and settings that HTTP API and the core API would accept. It is recommended to take a look at API Documentation to get more information about the API, caching, encryptions and other features.</p>		
+
+			<h2 id="index-checking-the-result-of-an-api-call">Checking the Result of an API Call</h2>
+			
+				<p>If your controllers are built by taking into account the standardized response arrays that includes www-response-code value in the array - topic which is covered in <a href="guide_mvc.htm">MVC</a> documentation - then there is a simple helper function that you can use to check if the API call was successful or not. This method simply returns false if the response error code below 500 was sent as response and it returns 'true' if response code of 500 or later was the response.</p>
+				
+				<p>The idea behind this is that while your API and Controllers can be very complicated in functionality, quite often you simply need to know if your API call was successful or not. For example, you can use this to test if your user was successfully logged in or if adding something to your database worked or not.</p>
+				
+				<p>Here is an example of testing if an internal API call was a success or not:</p>
+				
+<pre>
+	<code>
+	$apiResult=$this->api('user-login',array('username'=>'bluth','password'=>'123456'));
+	if($this->checkTrueFalse($apiResult)){
+		// API call was successful
+	} else {
+		// API call failed, either because of an error or failure response-code
+	}
+	</code>
+</pre>
+
+				<p>If the response array does not include a 'www-response-code' key, then this method will simply return the response data. This means that if you return an empty array, then you can still use this method to check if a call was successful or not - even though it is technically not recommended to do it this way. If you do not wish to use standardized response arrays, then you should simply use another method or just your own solution for this type of situations.</p>
+				
+				<p>Note that when 'www-response-code' has a value not in 5XX (meant for success/true responses) or 4XX (meant for failed/false responses) namespace and is in 1XX, 2XX or 3XX namespace, then Wave Framework will throw a PHP warning which will be logged in error log and is readable by Debugger script in '/tools/debugger.php'. This is because internal API calls should not encounter errors and should only get true or false type of responses.</p>
+				
+				<p>You can also check for errors yourself, if it is needed. This method call below is similar to 'checkTrueFalse()' method, except returns 'true' if an error response code was detected:</p>
+				
+<pre>
+	<code>
+	$apiResult=$this->api('user-login',array('username'=>'bluth','password'=>'123456'));
+	if($this->checkError($apiResult)){
+		// Something went wrong
+	}
+	</code>
+</pre>
+
+				<p>Standardized array responses - which have 'www-response-code' - can be very useful in a system built on Wave Framework, but they are not required. You can implement your own system and array keys which you then check when validating responses.</p>
+
+			<h2 id="index-making-api-requests-over-http">Making API Requests Over HTTP</h2>
+			
+				<p>Wave Framework also comes with an API Wrapper for both PHP and JavaScript, which other web servers can use to communicate with Wave Framework even when these systems themselves do not use Wave Framework. These classes are independent and standalone.</p>
+				
+				<p>But it is also possible to dynamically load a PHP API Wrapper from within <a href="guide_mvc.htm">MVC</a> Objects, which means that you can make your Wave Framework system send HTTP requests to another system that uses Wave Framework API.</p>
+				
+				<p>Factory essentially allows you to create a new API Wrapper object. You only have to provide the HTTP address of the API when creating the object, like this:</p>
+				
+<pre>
+	<code>
+	$api=$this->apiConnection('http://www.example.com/json.api');
+	</code>
+</pre>
+
+				<p>After this you can use the API similarly to how you would use the API Wrapper itself. There is more information about using the API Wrapper in API Documentation, but here is a simple example about making the same 'example-get' method call on another system through the Wrapper:</p>
+				
+<pre>
+	<code>
+	$result=$api->sendRequest(array('www-command'=>'example-get'));
+	// Simply prints out the resulting array
+	print_r($result); 
+	</code>
+</pre>
+
+				<p>This will return the result from the API call similarly to how it would when making the request internally. The only difference is that requests made over HTTP do require API Profile validation for non-public API commands, which is detailed further in the documentation for API Wrappers.</p>
+			
+	</body>
+</html>

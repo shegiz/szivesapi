@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Tools Class - Wave Framework</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width"/> 
+		<link type="text/css" href="../style.css" rel="stylesheet" media="all"/>
+		<link rel="icon" href="../../favicon.ico" type="image/x-icon"/>
+		<link rel="icon" href="../../favicon.ico" type="image/vnd.microsoft.icon"/>
+	</head>
+	<body>
+	
+		<h1>Tools Class</h1>
+		
+			<ul>
+				<li><a href="#index-files">Files</a></li>
+				<li><a href="#index-introduction">Introduction</a></li>
+				<li><a href="#index-using-tools-class">Using Tools Class</a></li>
+				<li><a href="#index-tools-class-parameters">Tools Class Parameters</a></li>
+				<li><a href="#index-tools-class-methods">Tools Class Methods</a></li>
+			</ul>
+		
+			<h2 id="index-files">Files</h2>
+			
+				<h3>/engine/class.www-tools.php</h3>
+		
+			<h2 id="index-introduction">Introduction</h2>
+			
+				<p>This class holds various functionality that also the /tools/ folder has itself. This allows the system to implement some of the tools functionality within the actual website itself, such as things like clearing cache in bulk, or returning an index of files from a folder.</p>
+				
+			<h2 id="index-using-tools-class">Using Tools Class</h2>
+			
+				<p>It is not recommended to use Tools class outside Wave Framework internal use, but it is certainly possible as long as the filesystem default folder structure is the same. To use the class, it is recommended to load Tools class and then call the methods of that class. For example, to delete all cache filesystem directory, then you can do it like this:</p>
+				
+<pre>
+	<code>
+	require('/engine/class.www-tools.php');
+	// Assign the filesystem folder directory with the construction
+	$tool=new WWW_Tools('/filesystem/');
+	// Deleting all cache
+	$tool->cleaner('cache');
+	</code>
+</pre>
+
+			<h2 id="index-tools-class-parameters">Tools Class Parameters</h2>
+			
+				<h3>public $filesystemDirectory=false</h3>
+				
+					<p>This is the filesystem directory of the project.</p>
+				
+			<h2 id="index-tools-class-methods">Tools Class Methods</h2>
+			
+				<h3>public function __construct($filesystemDirectory=false)</h3>
+				
+					<p>This creates the Tools object. If the filesystem is not sent during the object creation, then it attempts to find one by default based on requesting script folder. </p>
+			
+				<h3>public function cleaner($mode='maintenance',$cutoff=false)</h3>
+				
+					<p>This method cleans certain folders in filesystem. A cut-off timestamp can be set, which tells the cleaner not to delete certain files if their modification timestamp is newer.</p>
+			
+				<h3>public function indexer($directory,$mode='both')</h3>
+				
+					<p>This function returns an index of files, folders or both recursively from the requested folder.</p>
+			
+				<h3>public function counter($directory)</h3>
+				
+					<p>This function counts the amount of files in a folder.</p>
+			
+				<h3>public function sizer($directory)</h3>
+				
+					<p>This function calculates the total file size in a folder and all of its subfolders.</p>
+			
+	</body>
+</html>
